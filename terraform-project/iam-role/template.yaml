@@ -36,11 +36,16 @@ spec:
 
     - id: publish
       name: Push to Git
-      action: publish:github
-      input:     
+      action: publish:github:pull-request
+      input:
+        allowedHosts: ['github.com']
         repoUrl: github.com?owner=mina-arsham&repo=infra-repo
+        branchName: add-iam-role-${{ parameters.project_name }}
+        title: "feat: add IAM role for ${{ parameters.project_name }}"
         targetPath: proj-mina/${{ parameters.project_name }}
-        commitMessage: "feat: add IAM role for ${{ parameters.project_name }}"
+        description: "Automated Terraform IAM role creation for ${{ parameters.project_name }}"
+        gitCommitMessage: "feat: add IAM role for ${{ parameters.project_name }}"
+
 
     - id: log-output
       name: Show Generated Files
