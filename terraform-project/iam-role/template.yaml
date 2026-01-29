@@ -1,0 +1,59 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: iam-role
+  title: Create IAM Role (Terraform)
+  description: Generate a Terraform IAM role for a new project
+spec:
+  owner: platform-team
+  type: infrastructure
+
+  parameters:
+    - title: Project Information
+      required:
+        - project_name
+        - aws_account_id
+      properties:
+        project_name:
+          type: string
+          title: Project Name
+          description: Folder name and IAM role name
+          pattern: '^[a-z0-9-]+$'
+        aws_account_id:
+          type: string
+          title: AWS Account ID
+          pattern: '^[0-9]{12}$'
+
+  steps:
+    - id: fetch
+      name: Generate Terraform files
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          project_name: ${{ parameters.project_name }}
+          aws_account_id: ${{ parameters.aws_account_id }}
+
+    - id: publish
+      name: Push to Git
+      action: publish:github
+      input:     
+        repoUrl: github.com?owner=mina-arsham&repo=infra-repo
+        targetPath: proj-mina/${{ parameters.project_name }}
+        commitMessage: "feat: add IAM role for ${{ parameters.project_name }}"
+
+    - id: log-output
+      name: Show Generated Files
+      action: debug:log
+      input:
+        listWorkspace: true
+        message: |
+          ✅ Terraform files generated successfully!
+          - project_name: ${{ parameters.project_name }}
+          - aws_account_id: ${{ parameters.aws_account_id }}
+ 
+
+  output:
+    links:
+      - title: Open Infra Repository
+        url: https://github.com/mina-arsham/infra-repo
