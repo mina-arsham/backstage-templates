@@ -25,12 +25,10 @@ locals {
     ManagedBy   = "Terraform"
     Project     = "${{ values.project_name }}"
     CreatedAt   = timestamp()
-{%- if values.additional_tags and values.additional_tags | length > 0 %}
-{%- for key in values.additional_tags | keys %}
+{%- for key, value in values.additional_tags %}
     {{ key }} = "{{ values.additional_tags[key] }}"
 {%- endfor %}
-{%- endif %}
-  }
+ }
 }
 
 # Random suffix to ensure globally unique bucket name
