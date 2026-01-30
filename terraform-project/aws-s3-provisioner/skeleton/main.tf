@@ -26,7 +26,7 @@ locals {
     Project     = "${{ values.project_name }}"
     CreatedAt   = timestamp()
 {%- for key, value in values.additional_tags %}
-    {{ key }} = "{{ values.additional_tags[key] }}"
+    {{ key }} = "{{ value }}"
 {%- endfor %}
  }
 }
