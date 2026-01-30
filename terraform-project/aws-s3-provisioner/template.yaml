@@ -290,7 +290,7 @@ spec:
     - id: write-debug
       action: fs:write
       input:
-        path: rendered-main.tf
+        path: rendered-debug.txt
         content: |
           {{ contents }}
 
