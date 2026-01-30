@@ -280,7 +280,10 @@ data "aws_iam_policy_document" "bucket_policy" {
   }
 {%- endif %}
 
-{%- if values.bucket_policy_type == "specific_accounts" and values.allowed_aws_accounts %}
+
+{%- if values.bucket_policy_type == "specific_accounts"
+   and values.allowed_aws_accounts
+   and values.allowed_aws_accounts | length > 0 %}
   # Cross-Account Access
   statement {
     sid    = "AllowCrossAccountAccess"
