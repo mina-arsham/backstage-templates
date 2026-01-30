@@ -144,9 +144,9 @@ resource "aws_s3_bucket_cors_configuration" "main" {
   bucket = aws_s3_bucket.main.id
 
   cors_rule {
-    allowed_headers = ["{{ '*' }}"]
+    allowed_headers = ["*"]
     allowed_methods = ["GET", "HEAD", "PUT", "POST"]
-    allowed_origins = ["{{ '*' }}"]
+    allowed_origins = ["*"]
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
@@ -172,44 +172,44 @@ resource "aws_s3_bucket_website_configuration" "main" {
 {%- if values.bucket_policy_type != "none" %}
 
 # Bucket Policy
-# resource "aws_s3_bucket_policy" "main" {
-#   bucket = aws_s3_bucket.main.id
+resource "aws_s3_bucket_policy" "main" {
+  bucket = aws_s3_bucket.main.id
 
-# {%- if values.bucket_policy_type == "custom" %}
-#   policy = <<POLICY
-# ${{ values.custom_policy_json }}
-# POLICY
-# {%- else %}
-#   policy = data.aws_iam_policy_document.bucket_policy.json
-# {%- endif %}
+{%- if values.bucket_policy_type == "custom" %}
+  policy = <<POLICY
+${{ values.custom_policy_json }}
+POLICY
+{%- else %}
+  policy = data.aws_iam_policy_document.bucket_policy.json
+{%- endif %}
   
-#   depends_on = [aws_s3_bucket_public_access_block.main]
-# }
+  depends_on = [aws_s3_bucket_public_access_block.main]
+}
 
-# {%- if values.bucket_policy_type != "custom" %}
+{%- if values.bucket_policy_type != "custom" %}
 
-# # Data source for generating bucket policies based on type
-# data "aws_iam_policy_document" "bucket_policy" {
+# Data source for generating bucket policies based on type
+data "aws_iam_policy_document" "bucket_policy" {
 
-# {%- if values.bucket_policy_type == "read_only" %}
-#   # Public Read-Only Access
-#   statement {
-#     sid    = "PublicReadGetObject"
-#     effect = "Allow"
-#     principals {
-#       type        = "*"
-#       identifiers = ["*"]
-#     }
-#     actions = [
-#       "s3:GetObject"
-#     ]
-#     resources = [
-#       "${aws_s3_bucket.main.arn}/*"
-#     ]
-#   }
-# {%- endif %}
+{%- if values.bucket_policy_type == "read_only" %}
+  # Public Read-Only Access
+  statement {
+    sid    = "PublicReadGetObject"
+    effect = "Allow"
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    actions = [
+      "s3:GetObject"
+    ]
+    resources = [
+      "${aws_s3_bucket.main.arn}/*"
+    ]
+  }
+{%- endif %}
 
-# {%- if values.bucket_policy_type == "cloudfront_oac" and values.cloudfront_distribution_arn %}
+{%- if values.bucket_policy_type == "cloudfront_oac" and values.cloudfront_distribution_arn %}
   # CloudFront Origin Access Control (OAC)
   statement {
     sid    = "AllowCloudFrontServicePrincipal"
@@ -238,8 +238,8 @@ resource "aws_s3_bucket_website_configuration" "main" {
     sid    = "AllowVPCEndpointAccess"
     effect = "Allow"
     principals {
-      type        = "{{ '*' }}"
-      identifiers = ["{{ '*' }}"]
+      type        = "*"
+      identifiers = ["*"]
     }
     actions = [
       "s3:GetObject",
@@ -262,11 +262,11 @@ resource "aws_s3_bucket_website_configuration" "main" {
     sid    = "DenyNonVPCEndpointAccess"
     effect = "Deny"
     principals {
-      type        = "{{ '*' }}"
-      identifiers = ["{{ '*' }}"]
+      type        = "*"
+      identifiers = ["*"]
     }
     actions = [
-      "{{ 's3:*' }}"
+      "s3:*"
     ]
     resources = [
       aws_s3_bucket.main.arn,
@@ -314,11 +314,11 @@ resource "aws_s3_bucket_website_configuration" "main" {
     sid    = "DenyInsecureTransport"
     effect = "Deny"
     principals {
-      type        = "{{ '*' }}"
-      identifiers = ["{{ '*' }}"]
+      type        = "*"
+      identifiers = ["*"]
     }
     actions = [
-      "{{ 's3:*' }}"
+      "s3:*"
     ]
     resources = [
       aws_s3_bucket.main.arn,
@@ -338,10 +338,10 @@ resource "aws_s3_bucket_website_configuration" "main" {
     effect = "Allow"
     principals {
       type        = "AWS"
-      identifiers = ["{{ '*' }}"]
+      identifiers = ["*"]
     }
     actions = [
-       "{{ 's3:*' }}"
+       "s3:*"
     ]
     resources = [
       aws_s3_bucket.main.arn,

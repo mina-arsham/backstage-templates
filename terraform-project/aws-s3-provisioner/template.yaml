@@ -134,66 +134,66 @@ spec:
           description: Log all access requests to the bucket
           default: false
     
-    # - title: Bucket Policy Configuration
-    #   properties:
-    #     bucket_policy_type:
-    #       title: Bucket Policy Type
-    #       type: string
-    #       description: Pre-configured policy templates for common use cases
-    #       default: none
-    #       enum:
-    #         - none
-    #         - read_only
-    #         - cloudfront_oac
-    #         - vpc_endpoint
-    #         - specific_accounts
-    #         - require_ssl
-    #         - custom
-    #       enumNames:
-    #         - 'None - No bucket policy'
-    #         - 'Public Read - Allow public read access (use with caution)'
-    #         - 'CloudFront OAC - Allow access only from CloudFront distribution'
-    #         - 'VPC Endpoint - Restrict access to specific VPC endpoint'
-    #         - 'Cross-Account Access - Allow specific AWS accounts'
-    #         - 'Require SSL/TLS - Deny non-HTTPS requests'
-    #         - 'Custom Policy - Provide your own JSON policy'
+    - title: Bucket Policy Configuration
+      properties:
+        bucket_policy_type:
+          title: Bucket Policy Type
+          type: string
+          description: Pre-configured policy templates for common use cases
+          default: none
+          enum:
+            - none
+            - read_only
+            - cloudfront_oac
+            - vpc_endpoint
+            - specific_accounts
+            - require_ssl
+            - custom
+          enumNames:
+            - 'None - No bucket policy'
+            - 'Public Read - Allow public read access (use with caution)'
+            - 'CloudFront OAC - Allow access only from CloudFront distribution'
+            - 'VPC Endpoint - Restrict access to specific VPC endpoint'
+            - 'Cross-Account Access - Allow specific AWS accounts'
+            - 'Require SSL/TLS - Deny non-HTTPS requests'
+            - 'Custom Policy - Provide your own JSON policy'
         
-    #     allowed_aws_accounts:
-    #       title: Allowed AWS Account IDs
-    #       type: array
-    #       description: List of AWS account IDs for cross-account access (comma-separated)
-    #       items:
-    #         type: string
-    #         pattern: '^\d{12}$'
-    #       default: []
+        allowed_aws_accounts:
+          title: Allowed AWS Account IDs
+          type: array
+          description: List of AWS account IDs for cross-account access (comma-separated)
+          items:
+            type: string
+            pattern: '^\d{12}$'
+          default: []
         
-    #     vpc_endpoint_id:
-    #       title: VPC Endpoint ID
-    #       type: string
-    #       description: VPC endpoint ID to restrict access (format vpce-xxxxxxxxx)
-    #       pattern: '^(vpce-[a-z0-9]+)?$'
-    #       default: ''
+        vpc_endpoint_id:
+          title: VPC Endpoint ID
+          type: string
+          description: VPC endpoint ID to restrict access (format vpce-xxxxxxxxx)
+          pattern: '^(vpce-[a-z0-9]+)?$'
+          default: ''
         
-    #     cloudfront_distribution_arn:
-    #       title: CloudFront Distribution ARN
-    #       type: string
-    #       description: CloudFront distribution ARN for OAC policy
-    #       default: ''
+        cloudfront_distribution_arn:
+          title: CloudFront Distribution ARN
+          type: string
+          description: CloudFront distribution ARN for OAC policy
+          default: ''
         
-    #     custom_policy_json:
-    #       title: Custom Policy JSON
-    #       type: string
-    #       description: Custom bucket policy in JSON format (if policy type is custom)
-    #       ui:widget: textarea
-    #       ui:options:
-    #         rows: 10
-    #       default: ''
+        custom_policy_json:
+          title: Custom Policy JSON
+          type: string
+          description: Custom bucket policy in JSON format (if policy type is custom)
+          ui:widget: textarea
+          ui:options:
+            rows: 10
+          default: ''
         
-    #     require_mfa_delete:
-    #       title: Require MFA for Delete Operations
-    #       type: boolean
-    #       description: Require multi-factor authentication for object deletion
-    #       default: false
+        require_mfa_delete:
+          title: Require MFA for Delete Operations
+          type: boolean
+          description: Require multi-factor authentication for object deletion
+          default: false
     
     - title: Advanced Features (Optional)
       properties:
@@ -268,7 +268,7 @@ spec:
           lifecycle_expiration_days: ${{ parameters.lifecycle_expiration_days }}
           enable_cors: ${{ parameters.enable_cors }}
           enable_static_website: ${{ parameters.enable_static_website }}
-          #bucket_policy_type: ${{ parameters.bucket_policy_type }}
+          bucket_policy_type: ${{ parameters.bucket_policy_type }}
           allowed_aws_accounts: ${{ parameters.allowed_aws_accounts }}
           vpc_endpoint_id: ${{ parameters.vpc_endpoint_id }}
           cloudfront_distribution_arn: ${{ parameters.cloudfront_distribution_arn }}
