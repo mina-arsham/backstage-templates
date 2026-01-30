@@ -144,9 +144,9 @@ resource "aws_s3_bucket_cors_configuration" "main" {
   bucket = aws_s3_bucket.main.id
 
   cors_rule {
-    allowed_headers = ["*"]
+    allowed_headers = ["{{ '*' }}"]
     allowed_methods = ["GET", "HEAD", "PUT", "POST"]
-    allowed_origins = ["*"]
+    allowed_origins = ["{{ '*' }}"]
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
@@ -266,7 +266,7 @@ resource "aws_s3_bucket_website_configuration" "main" {
       identifiers = ["{{ '*' }}"]
     }
     actions = [
-      "s3:*"
+      "{{ 's3:*' }}"
     ]
     resources = [
       aws_s3_bucket.main.arn,
@@ -338,10 +338,10 @@ resource "aws_s3_bucket_website_configuration" "main" {
     effect = "Allow"
     principals {
       type        = "AWS"
-      identifiers = ["*"]
+      identifiers = ["{{ '*' }}"]
     }
     actions = [
-      "s3:*"
+       "{{ 's3:*' }}"
     ]
     resources = [
       aws_s3_bucket.main.arn,
