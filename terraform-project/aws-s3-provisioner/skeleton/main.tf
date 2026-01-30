@@ -25,9 +25,9 @@ locals {
     ManagedBy   = "Terraform"
     Project     = "${{ values.project_name }}"
     CreatedAt   = timestamp()
-{%- if values.additional_tags %}
-{%- for key, value in values.additional_tags %}
-    {{ key }} = "{{ value }}"
+{%- if values.additional_tags and values.additional_tags | length > 0 %}
+{%- for key in values.additional_tags | keys %}
+    {{ key }} = "{{ values.additional_tags[key] }}"
 {%- endfor %}
 {%- endif %}
   }
