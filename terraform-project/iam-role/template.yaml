@@ -56,13 +56,6 @@ spec:
           - project_name: ${{ parameters.project_name }}
           - aws_account_id: ${{ parameters.aws_account_id }}
  
-    - id: write-debug
-      action: fs:write
-      input:
-        path: rendered-main.tf
-        content: |
-          {{ contents }}
-
   output:
     links:
       - title: Open Infra Repository

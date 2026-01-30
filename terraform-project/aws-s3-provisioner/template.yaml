@@ -287,7 +287,13 @@ spec:
         title: "feat: add aws s3 for ${{ parameters.project_name }}"
         targetPath: proj-mina/${{ parameters.project_name }}
 
-    
+    - id: write-debug
+      action: fs:write
+      input:
+        path: rendered-main.tf
+        content: |
+          {{ contents }}
+
   output:
     links:
       - title: Open Infra Repository
