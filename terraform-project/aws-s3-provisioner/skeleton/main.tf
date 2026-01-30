@@ -238,8 +238,8 @@ data "aws_iam_policy_document" "bucket_policy" {
     sid    = "AllowVPCEndpointAccess"
     effect = "Allow"
     principals {
-      type        = "*"
-      identifiers = ["*"]
+      type        = "{{ '*' }}"
+      identifiers = ["{{ '*' }}"]
     }
     actions = [
       "s3:GetObject",
@@ -262,8 +262,8 @@ data "aws_iam_policy_document" "bucket_policy" {
     sid    = "DenyNonVPCEndpointAccess"
     effect = "Deny"
     principals {
-      type        = "*"
-      identifiers = ["*"]
+      type        = "{{ '*' }}"
+      identifiers = ["{{ '*' }}"]
     }
     actions = [
       "s3:*"
@@ -314,11 +314,11 @@ data "aws_iam_policy_document" "bucket_policy" {
     sid    = "DenyInsecureTransport"
     effect = "Deny"
     principals {
-      type        = "*"
-      identifiers = ["*"]
+      type        = "{{ '*' }}"
+      identifiers = ["{{ '*' }}"]
     }
     actions = [
-      "s3:*"
+      "{{ 's3:*' }}"
     ]
     resources = [
       aws_s3_bucket.main.arn,
