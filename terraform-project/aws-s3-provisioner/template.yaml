@@ -279,24 +279,17 @@ spec:
 
     - id: publish
       name: Publish to GitHub
-      action: publish:github
+      action: publish:github:pull-request
       input:
-        allowedHosts: ['github.com']
         description: Terraform code for S3 bucket - ${{ parameters.project_name }}
-        repoUrl: github.com?repo=${{ parameters.project_name }}-s3-bucket&owner=your-org
-        defaultBranch: main
+        repoUrl: github.com?owner=mina-arsham&repo=infra-repo
+        branchName: aws-s3-provisione-${{ parameters.project_name }}
+        title: "feat: add aws s3 for ${{ parameters.project_name }}"
+        targetPath: proj-mina/${{ parameters.project_name }}
 
-    - id: register
-      name: Register Component
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
-        catalogInfoPath: '/catalog-info.yaml'
-
+    
   output:
     links:
-      - title: Repository
-        url: ${{ steps.publish.output.remoteUrl }}
-      - title: Open in catalog
-        icon: catalog
-        entityRef: ${{ steps.register.output.entityRef }}
+      - title: Open Infra Repository
+        url: https://github.com/mina-arsham/infra-repo
+     

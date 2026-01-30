@@ -74,7 +74,7 @@ output "bucket_policy_applied" {
 
 output "mfa_delete_enabled" {
   description = "Whether MFA delete is enabled"
-  value       = ${{ values.require_mfa_delete and values.enable_versioning }}
+  value       = "${{ values.require_mfa_delete and values.enable_versioning }}"
 }
 
 output "tags" {
