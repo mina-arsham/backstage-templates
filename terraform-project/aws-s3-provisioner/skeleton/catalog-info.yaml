@@ -1,0 +1,26 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.project_name }}-s3-bucket
+  description: S3 bucket for ${{ values.project_name }} in ${{ values.environment }} environment
+  annotations:
+    github.com/project-slug: your-org/${{ values.project_name }}-s3-bucket
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - aws
+    - s3
+    - terraform
+    - storage
+    - ${{ values.environment }}
+  links:
+    - url: https://console.aws.amazon.com/s3/buckets/${{ values.project_name }}-${{ values.environment }}
+      title: AWS Console
+      icon: cloud
+spec:
+  type: infrastructure
+  lifecycle: ${{ values.environment }}
+  owner: ${{ values.owner_email }}
+  system: cloud-infrastructure
+  dependsOn:
+    - resource:default/aws-account
+  providesApis: []

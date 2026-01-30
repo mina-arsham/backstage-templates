@@ -1,0 +1,302 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: aws-s3-bucket-provisioner
+  title: AWS S3 Bucket Provisioner
+  description: Provision an AWS S3 bucket with customizable settings including versioning, encryption, and lifecycle policies
+  tags:
+    - aws
+    - s3
+    - terraform
+    - storage
+spec:
+  owner: platform-team
+  type: infrastructure
+  
+  parameters:
+    - title: Basic Configuration
+      required:
+        - project_name
+        - environment
+        - owner_email
+      properties:
+        project_name:
+          title: Project Name
+          type: string
+          description: Name of your project (will be used in bucket naming)
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+          ui:help: 'Use lowercase letters, numbers, and hyphens only'
+        
+        environment:
+          title: Environment
+          type: string
+          description: Target environment for deployment
+          default: dev
+          enum:
+            - dev
+            - staging
+            - prod
+          enumNames:
+            - 'Development'
+            - 'Staging'
+            - 'Production'
+        
+        owner_email:
+          title: Owner Email
+          type: string
+          description: Email of the team/person responsible for this bucket
+          format: email
+        
+        aws_region:
+          title: AWS Region
+          type: string
+          description: AWS region where the bucket will be created
+          default: us-east-1
+          enum:
+            - us-east-1
+            - us-east-2
+            - us-west-1
+            - us-west-2
+            - eu-west-1
+            - eu-central-1
+            - ap-southeast-1
+            - ap-northeast-1
+          enumNames:
+            - 'US East (N. Virginia)'
+            - 'US East (Ohio)'
+            - 'US West (N. California)'
+            - 'US West (Oregon)'
+            - 'Europe (Ireland)'
+            - 'Europe (Frankfurt)'
+            - 'Asia Pacific (Singapore)'
+            - 'Asia Pacific (Tokyo)'
+    
+    - title: Storage Configuration
+      properties:
+        storage_class:
+          title: Default Storage Class
+          type: string
+          description: Default storage class for objects in the bucket
+          default: STANDARD
+          enum:
+            - STANDARD
+            - INTELLIGENT_TIERING
+            - STANDARD_IA
+            - ONEZONE_IA
+            - GLACIER
+            - GLACIER_IR
+          enumNames:
+            - 'Standard - Frequently accessed data'
+            - 'Intelligent-Tiering - Automatic cost optimization'
+            - 'Standard-IA - Infrequently accessed data'
+            - 'One Zone-IA - Infrequent access, single AZ'
+            - 'Glacier Flexible Retrieval - Archive'
+            - 'Glacier Instant Retrieval - Archive with instant access'
+        
+        enable_versioning:
+          title: Enable Versioning
+          type: boolean
+          description: Keep multiple versions of objects in the bucket
+          default: true
+          ui:widget: radio
+          oneOf:
+            - const: true
+              title: Enabled
+            - const: false
+              title: Disabled
+    
+    - title: Security & Encryption
+      properties:
+        encryption_type:
+          title: Server-Side Encryption
+          type: string
+          description: Type of server-side encryption to use
+          default: AES256
+          enum:
+            - AES256
+            - aws:kms
+            - aws:kms:dsse
+          enumNames:
+            - 'SSE-S3 (AES-256) - AWS managed keys'
+            - 'SSE-KMS - AWS KMS managed keys'
+            - 'DSSE-KMS - Dual-layer encryption with KMS'
+        
+        block_public_access:
+          title: Block All Public Access
+          type: boolean
+          description: Prevent public access to bucket and objects
+          default: true
+        
+        enable_access_logging:
+          title: Enable Access Logging
+          type: boolean
+          description: Log all access requests to the bucket
+          default: false
+    
+    - title: Bucket Policy Configuration
+      properties:
+        bucket_policy_type:
+          title: Bucket Policy Type
+          type: string
+          description: Pre-configured policy templates for common use cases
+          default: none
+          enum:
+            - none
+            - read_only
+            - cloudfront_oac
+            - vpc_endpoint
+            - specific_accounts
+            - require_ssl
+            - custom
+          enumNames:
+            - 'None - No bucket policy'
+            - 'Public Read - Allow public read access (use with caution)'
+            - 'CloudFront OAC - Allow access only from CloudFront distribution'
+            - 'VPC Endpoint - Restrict access to specific VPC endpoint'
+            - 'Cross-Account Access - Allow specific AWS accounts'
+            - 'Require SSL/TLS - Deny non-HTTPS requests'
+            - 'Custom Policy - Provide your own JSON policy'
+        
+        allowed_aws_accounts:
+          title: Allowed AWS Account IDs
+          type: array
+          description: List of AWS account IDs for cross-account access (comma-separated)
+          items:
+            type: string
+            pattern: '^\d{12}$'
+          default: []
+        
+        vpc_endpoint_id:
+          title: VPC Endpoint ID
+          type: string
+          description: VPC endpoint ID to restrict access (format vpce-xxxxxxxxx)
+          pattern: '^(vpce-[a-z0-9]+)?$'
+          default: ''
+        
+        cloudfront_distribution_arn:
+          title: CloudFront Distribution ARN
+          type: string
+          description: CloudFront distribution ARN for OAC policy
+          default: ''
+        
+        custom_policy_json:
+          title: Custom Policy JSON
+          type: string
+          description: Custom bucket policy in JSON format (if policy type is custom)
+          ui:widget: textarea
+          ui:options:
+            rows: 10
+          default: ''
+        
+        require_mfa_delete:
+          title: Require MFA for Delete Operations
+          type: boolean
+          description: Require multi-factor authentication for object deletion
+          default: false
+    
+    - title: Advanced Features (Optional)
+      properties:
+        enable_lifecycle_policy:
+          title: Enable Lifecycle Policy
+          type: boolean
+          description: Automatically transition objects to cheaper storage classes
+          default: false
+        
+        lifecycle_transition_days:
+          title: Days Before Transitioning to IA
+          type: integer
+          description: Number of days after which objects transition to Infrequent Access
+          default: 90
+          minimum: 30
+          maximum: 365
+          ui:widget: range
+        
+        lifecycle_expiration_days:
+          title: Days Before Expiration
+          type: integer
+          description: Number of days after which objects are deleted (0 to disable)
+          default: 0
+          minimum: 0
+          maximum: 3650
+        
+        enable_cors:
+          title: Enable CORS
+          type: boolean
+          description: Enable Cross-Origin Resource Sharing
+          default: false
+        
+        enable_static_website:
+          title: Enable Static Website Hosting
+          type: boolean
+          description: Host a static website from this bucket
+          default: false
+    
+    - title: Tags & Metadata
+      properties:
+        cost_center:
+          title: Cost Center
+          type: string
+          description: Cost center code for billing
+          default: 'engineering'
+        
+        additional_tags:
+          title: Additional Tags (Optional)
+          type: object
+          description: Add custom tags as key-value pairs
+          additionalProperties:
+            type: string
+
+  steps:
+    - id: fetch-base
+      name: Fetch Terraform Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          project_name: ${{ parameters.project_name }}
+          environment: ${{ parameters.environment }}
+          owner_email: ${{ parameters.owner_email }}
+          aws_region: ${{ parameters.aws_region }}
+          storage_class: ${{ parameters.storage_class }}
+          enable_versioning: ${{ parameters.enable_versioning }}
+          encryption_type: ${{ parameters.encryption_type }}
+          block_public_access: ${{ parameters.block_public_access }}
+          enable_access_logging: ${{ parameters.enable_access_logging }}
+          enable_lifecycle_policy: ${{ parameters.enable_lifecycle_policy }}
+          lifecycle_transition_days: ${{ parameters.lifecycle_transition_days }}
+          lifecycle_expiration_days: ${{ parameters.lifecycle_expiration_days }}
+          enable_cors: ${{ parameters.enable_cors }}
+          enable_static_website: ${{ parameters.enable_static_website }}
+          bucket_policy_type: ${{ parameters.bucket_policy_type }}
+          allowed_aws_accounts: ${{ parameters.allowed_aws_accounts }}
+          vpc_endpoint_id: ${{ parameters.vpc_endpoint_id }}
+          cloudfront_distribution_arn: ${{ parameters.cloudfront_distribution_arn }}
+          custom_policy_json: ${{ parameters.custom_policy_json }}
+          require_mfa_delete: ${{ parameters.require_mfa_delete }}
+          cost_center: ${{ parameters.cost_center }}
+          additional_tags: ${{ parameters.additional_tags }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: Terraform code for S3 bucket - ${{ parameters.project_name }}
+        repoUrl: github.com?repo=${{ parameters.project_name }}-s3-bucket&owner=your-org
+        defaultBranch: main
+
+    - id: register
+      name: Register Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
