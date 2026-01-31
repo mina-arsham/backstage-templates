@@ -28,8 +28,11 @@ locals {
       ManagedBy   = "Terraform"
       Project     = "${{ values.project_name }}"
     },
-    ${{ values.additional_tags | toJson | replace(':', ' =') }
-
+     {
+%{ for k, v in values.additional_tags ~}
+      ${k} = "${v}"
+%{ endfor ~}
+    }
   )
 }
 
