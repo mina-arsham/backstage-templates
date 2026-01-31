@@ -34,11 +34,6 @@ locals {
   }
 }
 
-{%- if values.additional_tags %}
-{%- for key in values.additional_tags %}
-    {{ key }} = "${{ values.additional_tags[key] }}"
-{%- endfor %}
-{%- endif %}
 # Random suffix to ensure globally unique bucket name
 resource "random_string" "bucket_suffix" {
   length  = 8
