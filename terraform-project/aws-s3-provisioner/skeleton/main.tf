@@ -19,20 +19,17 @@ provider "aws" {
 locals {
   bucket_name = "${{ values.project_name }}-${{ values.environment }}-${random_string.bucket_suffix.result}"
   
-  common_tags = {
-    Name        = local.bucket_name
-    Environment = "${{ values.environment }}"
-    Owner       = "${{ values.owner_email }}"
-    CostCenter  = "${{ values.cost_center }}"
-    ManagedBy   = "Terraform"
-    Project     = "${{ values.project_name }}"
-{% if values.additional_tags %}
-{% for key, value in values.additional_tags %}
-    {{ key }} = "{{ value }}"
-{% endfor %}
-{% endif %}
-
-  }
+  common_tags = merge(
+    {
+      Name        = local.bucket_name
+      Environment = "${{ values.environment }}"
+      Owner       = "${{ values.owner_email }}"
+      CostCenter  = "${{ values.cost_center }}"
+      ManagedBy   = "Terraform"
+      Project     = "${{ values.project_name }}"
+    },
+    ${{ values.additional_tags | default({}) }}
+  )
 }
 
 # Random suffix to ensure globally unique bucket name
