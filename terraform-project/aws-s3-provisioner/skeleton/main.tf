@@ -27,10 +27,11 @@ locals {
     ManagedBy   = "Terraform"
     Project     = "${{ values.project_name }}"
 {% if values.additional_tags %}
-{% for key in values.additional_tags %}
-    {{ key }} = "${{ values.additional_tags[key] }}"
+{% for key, value in values.additional_tags %}
+    {{ key }} = "{{ value }}"
 {% endfor %}
 {% endif %}
+
   }
 }
 
