@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.5"
+    }
   }
 }
 
@@ -51,8 +55,8 @@ resource "aws_s3_bucket_versioning" "main" {
   bucket = aws_s3_bucket.main.id
   
   versioning_configuration {
-    status     = {% if values.enable_versioning %}Enabled{% else %}Disabled{% endif %}
-    mfa_delete = {% if values.require_mfa_delete and values.enable_versioning %}Enabled{% else %}Disabled{% endif %}
+    status     = "{% if values.enable_versioning %}Enabled{% else %}Disabled{% endif %}"
+    mfa_delete = "{% if values.require_mfa_delete and values.enable_versioning %}Enabled{% else %}Disabled{% endif %}"
   }
 }
 
@@ -64,8 +68,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "main" {
     apply_server_side_encryption_by_default {
       sse_algorithm = "{% if values.encryption_type == 'AES256' %}AES256{% else %}aws:kms{% endif %}"
     }
-    bucket_key_enabled = {% if values.encryption_type != 'AES256' %}true{% else %}false{% endif %}
-  }
+
+  {% if values.encryption_type != "AES256" %}
+    bucket_key_enabled = true
+  {% endif %}
+}
+
 }
 
 # Block Public Access
@@ -288,7 +296,7 @@ data "aws_iam_policy_document" "bucket_policy" {
       type        = "AWS"
       identifiers = [
 {%- for account in values.allowed_aws_accounts %}
-        "arn:aws:iam::{{ account }}:root"{{ "," if not loop.last else "" }}
+        "arn:aws:iam::{{ account }}:root",
 {%- endfor %}
       ]
     }
