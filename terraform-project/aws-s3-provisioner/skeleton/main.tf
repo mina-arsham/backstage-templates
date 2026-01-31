@@ -306,10 +306,11 @@ data "aws_iam_policy_document" "bucket_policy" {
     principals {
       type        = "AWS"
       identifiers = [
-{%- for account in values.allowed_aws_accounts %}
-        "arn:aws:iam::{{ account }}:root",
-{%- endfor %}
-      ]
+{% for acct in values.allowed_aws_accounts %}
+  "arn:aws:iam::{{ acct }}:root"{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+
     }
     actions = [
       "s3:GetObject",
