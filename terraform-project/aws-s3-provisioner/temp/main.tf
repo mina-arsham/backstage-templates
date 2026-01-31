@@ -17,7 +17,7 @@ provider "aws" {
 locals {
   bucket_name = "${{ values.project_name }}-${{ values.environment }}-${random_string.bucket_suffix.result}"
   
-  common_tags = merge({
+  common_tags = {
     Name        = local.bucket_name
     Environment = "${{ values.environment }}"
     Owner       = "${{ values.owner_email }}"
@@ -25,11 +25,10 @@ locals {
     ManagedBy   = "Terraform"
     Project     = "${{ values.project_name }}"
     CreatedAt   = timestamp()
-  }{%- if values.additional_tags and values.additional_tags | length > 0 %}, {
 {%- for key, value in values.additional_tags %}
-    "{{ key }}" = "{{ value }}"{{ "," if not loop.last else "" }}
+    {{ key }} = "{{ value }}"
 {%- endfor %}
-  }{%- endif %})
+ }
 }
 
 # Random suffix to ensure globally unique bucket name
@@ -51,8 +50,8 @@ resource "aws_s3_bucket_versioning" "main" {
   bucket = aws_s3_bucket.main.id
   
   versioning_configuration {
-    status     = {% if values.enable_versioning %}Enabled{% else %}Disabled{% endif %}
-    mfa_delete = {% if values.require_mfa_delete and values.enable_versioning %}Enabled{% else %}Disabled{% endif %}
+    status     = "${{ values.enable_versioning }}" == "true" ? "Enabled" : "Disabled"
+    mfa_delete = "${{ values.require_mfa_delete }}" == "true" && "${{ values.enable_versioning }}" == "true" ? "Enabled" : "Disabled"
   }
 }
 
@@ -62,9 +61,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "main" {
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "{% if values.encryption_type == 'AES256' %}AES256{% else %}aws:kms{% endif %}"
+      sse_algorithm = "${{ values.encryption_type }}" == "AES256" ? "AES256" : "aws:kms"
     }
-    bucket_key_enabled = {% if values.encryption_type != 'AES256' %}true{% else %}false{% endif %}
+    bucket_key_enabled = "${{ values.encryption_type }}" != "AES256"
   }
 }
 
@@ -72,10 +71,10 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "main" {
 resource "aws_s3_bucket_public_access_block" "main" {
   bucket = aws_s3_bucket.main.id
 
-  block_public_acls       = {% if values.block_public_access %}true{% else %}false{% endif %}
-  block_public_policy     = {% if values.block_public_access %}true{% else %}false{% endif %}
-  ignore_public_acls      = {% if values.block_public_access %}true{% else %}false{% endif %}
-  restrict_public_buckets = {% if values.block_public_access %}true{% else %}false{% endif %}
+  block_public_acls       = "${{ values.block_public_access }}"
+  block_public_policy     = "${{ values.block_public_access }}"
+  ignore_public_acls      = "${{ values.block_public_access }}"
+  restrict_public_buckets = "${{ values.block_public_access }}"
 }
 
 {%- if values.enable_access_logging %}
@@ -112,24 +111,24 @@ resource "aws_s3_bucket_lifecycle_configuration" "main" {
     status = "Enabled"
 
     transition {
-      days          = {{ values.lifecycle_transition_days }}
+      days          = "${{ values.lifecycle_transition_days }}"
       storage_class = "STANDARD_IA"
     }
 
 {%- if values.lifecycle_expiration_days > 0 %}
     expiration {
-      days = {{ values.lifecycle_expiration_days }}
+      days = "${{ values.lifecycle_expiration_days }}"
     }
 {%- endif %}
 
     noncurrent_version_transition {
-      noncurrent_days = {{ values.lifecycle_transition_days + 30 }}
+      noncurrent_days = "${{ values.lifecycle_transition_days + 30 }}"
       storage_class   = "GLACIER"
     }
 
 {%- if values.lifecycle_expiration_days > 0 %}
     noncurrent_version_expiration {
-      noncurrent_days = {{ values.lifecycle_expiration_days + 30 }}
+      noncurrent_days = "${{ values.lifecycle_expiration_days + 30 }}"
     }
 {%- endif %}
   }
@@ -279,7 +278,10 @@ data "aws_iam_policy_document" "bucket_policy" {
   }
 {%- endif %}
 
-{%- if values.bucket_policy_type == "specific_accounts" and values.allowed_aws_accounts %}
+
+{%- if values.bucket_policy_type == "specific_accounts"
+   and values.allowed_aws_accounts
+   and values.allowed_aws_accounts | length > 0 %}
   # Cross-Account Access
   statement {
     sid    = "AllowCrossAccountAccess"
@@ -337,7 +339,7 @@ data "aws_iam_policy_document" "bucket_policy" {
       identifiers = ["*"]
     }
     actions = [
-      "s3:*"
+       "s3:*"
     ]
     resources = [
       aws_s3_bucket.main.arn,
