@@ -28,7 +28,7 @@ locals {
       ManagedBy   = "Terraform"
       Project     = "${{ values.project_name }}"
     },
-    ${{ values.additional_tags }}
+    ${{ values.additional_tags | dump }}
   )
 }
 
