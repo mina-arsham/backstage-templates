@@ -1,3 +1,9 @@
+# DEBUG: Passed values
+# Project: ${{ values.project_name }}
+# Environment: ${{ values.environment }}
+# Policy Type: ${{ values.bucket_policy_type }}
+# Accounts: ${{ values.allowed_aws_accounts | dump }}
+# Additional tag: ${{ values.additional_tags | dump }}
 terraform {
   required_version = ">= 1.0"
   
@@ -18,8 +24,6 @@ provider "aws" {
 }
 
 # Generate a unique bucket name
-# DEBUG: what Backstage is passing to Terraform
-# ${{ values.additional_tags | dump }}
 locals {
   bucket_name = "${{ values.project_name }}-${{ values.environment }}-${random_string.bucket_suffix.result}"
   
@@ -298,7 +302,7 @@ data "aws_iam_policy_document" "bucket_policy" {
   }
 {%- endif %}
 
-{%- if values.bucket_policy_type == "specific_accounts" and values.allowed_aws_accounts %}
+{%- if values.bucket_policy_type == "specific_accounts" and values.allowed_aws_accounts and (values.allowed_aws_accounts | length) > 0 %}
   # Cross-Account Access
   statement {
     sid    = "AllowCrossAccountAccess"
@@ -306,11 +310,11 @@ data "aws_iam_policy_document" "bucket_policy" {
     principals {
       type        = "AWS"
       identifiers = [
-{% for acct in values.allowed_aws_accounts %}
-  "arn:aws:iam::{{ acct }}:root"{% if not loop.last %},{% endif %}
-{% endfor %}
-]
+{%- for acct in values.allowed_aws_accounts %}
+        "arn:aws:iam::{{ acct }}:root"{% if not loop.last %},{% endif %}
 
+{%- endfor %}
+      ]
     }
     actions = [
       "s3:GetObject",
