@@ -26,11 +26,11 @@ locals {
     CostCenter  = "${{ values.cost_center }}"
     ManagedBy   = "Terraform"
     Project     = "${{ values.project_name }}"
-{%- if values.additional_tags %}
-{%- for key in values.additional_tags %}
+{% if values.additional_tags %}
+{% for key in values.additional_tags %}
     "{{ key }}" = "${{ values.additional_tags[key] }}"
-{%- endfor %}
-{%- endif %}
+{% endfor %}
+{% endif %}
   }
 }
 
