@@ -286,6 +286,13 @@ spec:
         branchName: aws-s3-provisione-${{ parameters.project_name }}
         title: "feat: add aws s3 for ${{ parameters.project_name }}"
         targetPath: proj-mina/${{ parameters.project_name }}
+    
+    - id: register
+      name: Register Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
 
   output:
     links:
