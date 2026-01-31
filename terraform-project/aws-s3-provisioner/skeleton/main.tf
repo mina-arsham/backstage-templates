@@ -28,7 +28,7 @@ locals {
     Project     = "${{ values.project_name }}"
 {% if values.additional_tags %}
 {% for key in values.additional_tags %}
-    "{{ key }}" = "${{ values.additional_tags[key] }}"
+    {{ key }} = "${{ values.additional_tags[key] }}"
 {% endfor %}
 {% endif %}
   }
