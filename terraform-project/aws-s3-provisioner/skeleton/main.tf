@@ -14,7 +14,8 @@ provider "aws" {
 }
 
 # Generate a unique bucket name
-# Generate a unique bucket name
+# DEBUG: what Backstage is passing to Terraform
+# ${{ values.additional_tags | dump }}
 locals {
   bucket_name = "${{ values.project_name }}-${{ values.environment }}-${random_string.bucket_suffix.result}"
   
