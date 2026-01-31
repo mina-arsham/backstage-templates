@@ -23,6 +23,13 @@ provider "aws" {
   region = "${{ values.aws_region }}"
 }
 
+# DEBUG: Passed values
+# Project: ${{ values.project_name }}
+# Environment: ${{ values.environment }}
+# Policy Type: ${{ values.bucket_policy_type }}
+# Accounts: ${{ values.allowed_aws_accounts | dump }}
+# Additional tag: ${{ values.additional_tags | dump }}
+
 # Generate a unique bucket name
 locals {
   bucket_name = "${{ values.project_name }}-${{ values.environment }}-${random_string.bucket_suffix.result}"
@@ -59,8 +66,8 @@ resource "aws_s3_bucket_versioning" "main" {
   bucket = aws_s3_bucket.main.id
   
   versioning_configuration {
-    status     = "{% if values.enable_versioning %}Enabled{% else %}Disabled{% endif %}"
-    mfa_delete = "{% if values.require_mfa_delete and values.enable_versioning %}Enabled{% else %}Disabled{% endif %}"
+    status     = {% if values.enable_versioning %}Enabled{% else %}Disabled{% endif %}
+    mfa_delete = {% if values.require_mfa_delete and values.enable_versioning %}Enabled{% else %}Disabled{% endif %}
   }
 }
 
@@ -68,27 +75,27 @@ resource "aws_s3_bucket_versioning" "main" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "main" {
   bucket = aws_s3_bucket.main.id
 
-{% if values.encryption_type == "AES256" %}
+{% if values.encryption_type == "AES256" -%}
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
   }
-{% elif values.encryption_type == "aws:kms" %}
+{%- elif values.encryption_type == "aws:kms" -%}
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "aws:kms"
     }
     bucket_key_enabled = true
   }
-{% elif values.encryption_type == "aws:kms:dsse" %}
+{%- elif values.encryption_type == "aws:kms:dsse" -%}
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "aws:kms:dsse"
     }
     bucket_key_enabled = true
   }
-{% endif %}
+{%- endif %}
 }
 
 # Block Public Access
@@ -100,7 +107,6 @@ resource "aws_s3_bucket_public_access_block" "main" {
   ignore_public_acls      = {% if values.block_public_access %}true{% else %}false{% endif %}
   restrict_public_buckets = {% if values.block_public_access %}true{% else %}false{% endif %}
 }
-
 {%- if values.enable_access_logging %}
 
 # Access Logging Bucket
@@ -123,7 +129,6 @@ resource "aws_s3_bucket_logging" "main" {
   target_prefix = "log/"
 }
 {%- endif %}
-
 {%- if values.enable_lifecycle_policy %}
 
 # Lifecycle Policy
@@ -135,30 +140,29 @@ resource "aws_s3_bucket_lifecycle_configuration" "main" {
     status = "Enabled"
 
     transition {
-      days          = {{ values.lifecycle_transition_days }}
+      days          = ${{ values.lifecycle_transition_days }}
       storage_class = "STANDARD_IA"
     }
-
 {%- if values.lifecycle_expiration_days > 0 %}
+
     expiration {
-      days = {{ values.lifecycle_expiration_days }}
+      days = ${{ values.lifecycle_expiration_days }}
     }
 {%- endif %}
 
     noncurrent_version_transition {
-      noncurrent_days = {{ values.lifecycle_transition_days + 30 }}
+      noncurrent_days = ${{ values.lifecycle_transition_days + 30 }}
       storage_class   = "GLACIER"
     }
-
 {%- if values.lifecycle_expiration_days > 0 %}
+
     noncurrent_version_expiration {
-      noncurrent_days = {{ values.lifecycle_expiration_days + 30 }}
+      noncurrent_days = ${{ values.lifecycle_expiration_days + 30 }}
     }
 {%- endif %}
   }
 }
 {%- endif %}
-
 {%- if values.enable_cors %}
 
 # CORS Configuration
@@ -174,7 +178,6 @@ resource "aws_s3_bucket_cors_configuration" "main" {
   }
 }
 {%- endif %}
-
 {%- if values.enable_static_website %}
 
 # Static Website Hosting
@@ -190,30 +193,29 @@ resource "aws_s3_bucket_website_configuration" "main" {
   }
 }
 {%- endif %}
-
 {%- if values.bucket_policy_type != "none" %}
 
 # Bucket Policy
 resource "aws_s3_bucket_policy" "main" {
   bucket = aws_s3_bucket.main.id
-
 {%- if values.bucket_policy_type == "custom" %}
+
   policy = <<POLICY
 ${{ values.custom_policy_json }}
 POLICY
 {%- else %}
+
   policy = data.aws_iam_policy_document.bucket_policy.json
 {%- endif %}
   
   depends_on = [aws_s3_bucket_public_access_block.main]
 }
-
 {%- if values.bucket_policy_type != "custom" %}
 
 # Data source for generating bucket policies based on type
 data "aws_iam_policy_document" "bucket_policy" {
-
 {%- if values.bucket_policy_type == "read_only" %}
+
   # Public Read-Only Access
   statement {
     sid    = "PublicReadGetObject"
@@ -230,8 +232,8 @@ data "aws_iam_policy_document" "bucket_policy" {
     ]
   }
 {%- endif %}
-
 {%- if values.bucket_policy_type == "cloudfront_oac" and values.cloudfront_distribution_arn %}
+
   # CloudFront Origin Access Control (OAC)
   statement {
     sid    = "AllowCloudFrontServicePrincipal"
@@ -253,8 +255,8 @@ data "aws_iam_policy_document" "bucket_policy" {
     }
   }
 {%- endif %}
-
 {%- if values.bucket_policy_type == "vpc_endpoint" and values.vpc_endpoint_id %}
+
   # VPC Endpoint Restriction - Allow
   statement {
     sid    = "AllowVPCEndpointAccess"
@@ -301,8 +303,8 @@ data "aws_iam_policy_document" "bucket_policy" {
     }
   }
 {%- endif %}
-
 {%- if values.bucket_policy_type == "specific_accounts" and values.allowed_aws_accounts and (values.allowed_aws_accounts | length) > 0 %}
+
   # Cross-Account Access
   statement {
     sid    = "AllowCrossAccountAccess"
@@ -311,7 +313,7 @@ data "aws_iam_policy_document" "bucket_policy" {
       type        = "AWS"
       identifiers = [
 {%- for acct in values.allowed_aws_accounts %}
-        "arn:aws:iam::{{ acct }}:root"{% if not loop.last %},{% endif %}
+        "arn:aws:iam::${{ acct }}:root"{% if not loop.last %},{% endif %}
 
 {%- endfor %}
       ]
@@ -350,8 +352,8 @@ data "aws_iam_policy_document" "bucket_policy" {
       values   = ["false"]
     }
   }
-
 {%- if values.bucket_policy_type == "require_ssl" %}
+
   # Require SSL/TLS - Allow statement
   statement {
     sid    = "AllowSSLRequestsOnly"
