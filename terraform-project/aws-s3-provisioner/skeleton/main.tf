@@ -14,23 +14,25 @@ provider "aws" {
 }
 
 # Generate a unique bucket name
+# Generate a unique bucket name
 locals {
   bucket_name = "${{ values.project_name }}-${{ values.environment }}-${random_string.bucket_suffix.result}"
   
-  common_tags = merge({
+  common_tags = {
     Name        = local.bucket_name
     Environment = "${{ values.environment }}"
     Owner       = "${{ values.owner_email }}"
     CostCenter  = "${{ values.cost_center }}"
     ManagedBy   = "Terraform"
     Project     = "${{ values.project_name }}"
-    CreatedAt   = timestamp()
-  }{%- if values.additional_tags and values.additional_tags | length > 0 %}, {
-{%- for key, value in values.additional_tags %}
-    "{{ key }}" = "{{ value }}"{{ "," if not loop.last else "" }}
+{%- if values.additional_tags %}
+{%- for key in values.additional_tags %}
+    {{ key }} = "${{ values.additional_tags[key] }}"
 {%- endfor %}
-  }{%- endif %})
+{%- endif %}
+  }
 }
+
 
 # Random suffix to ensure globally unique bucket name
 resource "random_string" "bucket_suffix" {
