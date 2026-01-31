@@ -28,11 +28,7 @@ locals {
       ManagedBy   = "Terraform"
       Project     = "${{ values.project_name }}"
     },
-     {
-%{ for k, v in values.additional_tags ~}
-      ${k} = "${v}"
-%{ endfor ~}
-    }
+     ${{ values.additional_tags }}
   )
 }
 
