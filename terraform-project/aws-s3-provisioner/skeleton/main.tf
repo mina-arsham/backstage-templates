@@ -23,13 +23,6 @@ provider "aws" {
   region = "${{ values.aws_region }}"
 }
 
-# DEBUG: Passed values
-# Project: ${{ values.project_name }}
-# Environment: ${{ values.environment }}
-# Policy Type: ${{ values.bucket_policy_type }}
-# Accounts: ${{ values.allowed_aws_accounts | dump }}
-# Additional tag: ${{ values.additional_tags | dump }}
-
 # Generate a unique bucket name
 locals {
   bucket_name = "${{ values.project_name }}-${{ values.environment }}-${random_string.bucket_suffix.result}"
@@ -66,8 +59,8 @@ resource "aws_s3_bucket_versioning" "main" {
   bucket = aws_s3_bucket.main.id
   
   versioning_configuration {
-    status     = {% if values.enable_versioning %}Enabled{% else %}Disabled{% endif %}
-    mfa_delete = {% if values.require_mfa_delete and values.enable_versioning %}Enabled{% else %}Disabled{% endif %}
+    status     = "{% if values.enable_versioning %}Enabled{% else %}Disabled{% endif %}"
+    mfa_delete = "{% if values.require_mfa_delete and values.enable_versioning %}Enabled{% else %}Disabled{% endif %}"
   }
 }
 
@@ -75,7 +68,8 @@ resource "aws_s3_bucket_versioning" "main" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "main" {
   bucket = aws_s3_bucket.main.id
 
-{% if values.encryption_type == "AES256" -%}
+{% if values.encryption_type == "AES256" %}
+
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
