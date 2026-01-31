@@ -74,26 +74,6 @@ spec:
     
     - title: Storage Configuration
       properties:
-        storage_class:
-          title: Default Storage Class
-          type: string
-          description: Default storage class for objects in the bucket
-          default: STANDARD
-          enum:
-            - STANDARD
-            - INTELLIGENT_TIERING
-            - STANDARD_IA
-            - ONEZONE_IA
-            - GLACIER
-            - GLACIER_IR
-          enumNames:
-            - 'Standard - Frequently accessed data'
-            - 'Intelligent-Tiering - Automatic cost optimization'
-            - 'Standard-IA - Infrequently accessed data'
-            - 'One Zone-IA - Infrequent access, single AZ'
-            - 'Glacier Flexible Retrieval - Archive'
-            - 'Glacier Instant Retrieval - Archive with instant access'
-        
         enable_versioning:
           title: Enable Versioning
           type: boolean
@@ -128,12 +108,6 @@ spec:
           description: Prevent public access to bucket and objects
           default: true
         
-        enable_access_logging:
-          title: Enable Access Logging
-          type: boolean
-          description: Log all access requests to the bucket
-          default: false
-    
     - title: Bucket Policy Configuration
       properties:
         bucket_policy_type:
@@ -144,20 +118,12 @@ spec:
           enum:
             - none
             - read_only
-            - cloudfront_oac
-            - vpc_endpoint
             - specific_accounts
-            - require_ssl
-            - custom
           enumNames:
             - 'None - No bucket policy'
             - 'Public Read - Allow public read access (use with caution)'
-            - 'CloudFront OAC - Allow access only from CloudFront distribution'
-            - 'VPC Endpoint - Restrict access to specific VPC endpoint'
             - 'Cross-Account Access - Allow specific AWS accounts'
-            - 'Require SSL/TLS - Deny non-HTTPS requests'
-            - 'Custom Policy - Provide your own JSON policy'
-        
+
         allowed_aws_accounts:
           title: Allowed AWS Account IDs
           type: array
@@ -167,28 +133,6 @@ spec:
             pattern: '^\d{12}$'
           default: []
         
-        vpc_endpoint_id:
-          title: VPC Endpoint ID
-          type: string
-          description: VPC endpoint ID to restrict access (format vpce-xxxxxxxxx)
-          pattern: '^(vpce-[a-z0-9]+)?$'
-          default: ''
-        
-        cloudfront_distribution_arn:
-          title: CloudFront Distribution ARN
-          type: string
-          description: CloudFront distribution ARN for OAC policy
-          default: ''
-        
-        custom_policy_json:
-          title: Custom Policy JSON
-          type: string
-          description: Custom bucket policy in JSON format (if policy type is custom)
-          ui:widget: textarea
-          ui:options:
-            rows: 10
-          default: ''
-        
         require_mfa_delete:
           title: Require MFA for Delete Operations
           type: boolean
@@ -197,34 +141,6 @@ spec:
     
     - title: Advanced Features (Optional)
       properties:
-        enable_lifecycle_policy:
-          title: Enable Lifecycle Policy
-          type: boolean
-          description: Automatically transition objects to cheaper storage classes
-          default: false
-        
-        lifecycle_transition_days:
-          title: Days Before Transitioning to IA
-          type: integer
-          description: Number of days after which objects transition to Infrequent Access
-          default: 90
-          minimum: 30
-          maximum: 365
-          ui:widget: range
-        
-        lifecycle_expiration_days:
-          title: Days Before Expiration
-          type: integer
-          description: Number of days after which objects are deleted (0 to disable)
-          default: 0
-          minimum: 0
-          maximum: 3650
-        
-        enable_cors:
-          title: Enable CORS
-          type: boolean
-          description: Enable Cross-Origin Resource Sharing
-          default: false
         
         enable_static_website:
           title: Enable Static Website Hosting
