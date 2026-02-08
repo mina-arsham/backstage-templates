@@ -112,7 +112,7 @@ spec:
       action: publish:github:pull-request
       input:
         repoUrl: github.com?owner=mina-arsham&repo=infra-repo
-        branchName: ecr-${{ parameters.serviceName}}-${{ '' | now | replace(':', '-') }}
+        branchName: ecr-${{ parameters.serviceName}}
         title: 'feat: Add ECR repositories for ${{ parameters.serviceName}}'
         description: |
           ## ECR Repository Addition
