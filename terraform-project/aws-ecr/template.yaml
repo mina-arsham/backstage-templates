@@ -1,0 +1,144 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: ecr-repository-terraform
+  title: ECR Repository Terraform Module
+  description: Creates a new Terraform file for ECR repositories for a team/project
+  tags:
+    - terraform
+    - ecr
+    - aws
+    - infrastructure
+spec:
+  owner: platform-team
+  type: infrastructure
+  
+  parameters:
+    - title: Team/Project Information
+      required:
+        - project
+        - legalEntity
+        - serviceName
+      properties:
+        teamName:
+          title: Team Name
+          type: string
+          description: Name of the team (e.g., Connectivity,Foundations,SDM,...)
+          pattern: '^[a-zA-Z0-9-]+$'
+          ui:autofocus: true
+          ui:help: 'Use letters, numbers, and hyphens'
+        
+        serviceName:
+          title: Service Name
+          type: string
+          description: Service name (will be used in releases/ and snapshots/ paths)
+          pattern: '^[a-z0-9-]+$'
+          ui:help: 'Example: sap-invoice-helper (lowercase with hyphens)'
+        
+        description:
+          title: Description
+          type: string
+          description: Brief description of what this service/project is for
+          ui:widget: textarea
+        
+        project:
+          title: Project Tag
+          type: string
+          description: Project tag value (e.g., fxb, banking)
+          default: "fxb"
+        
+        legalEntity:
+          title: Legal Entity
+          type: string
+          description: Legal entity for tagging
+          default: "abcd Group GmbH"
+    
+    - title: Repository Configuration
+      properties:
+        scanOnPush:
+          title: Enable Image Scanning on Push
+          type: string
+          default: "true"
+          enum:
+            - "true"
+            - "false"
+          description: Automatically scan images for vulnerabilities when pushed
+        
+        defaultMutability:
+          title: Image Tag Mutability
+          type: string
+          default: "IMMUTABLE"
+          enum:
+            - MUTABLE
+            - IMMUTABLE
+          description: IMMUTABLE recommended for production
+        
+        releasesImageCount:
+          title: Releases Repository - Image Retention Count
+          type: integer
+          default: 5
+          description: Keep last N images in releases/ repository (prod/test)
+          minimum: 1
+          maximum: 100
+        
+        snapshotsImageCount:
+          title: Snapshots Repository - Image Retention Count
+          type: integer
+          default: 5
+          description: Keep last N images in snapshots/ repository (dev/int)
+          minimum: 1
+          maximum: 100
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          teamName: ${{ parameters.teamName }}
+          serviceName: ${{ parameters.projectName }}
+          description: ${{ parameters.description }}
+          project: ${{ parameters.project }}
+          legalEntity: ${{ parameters.legalEntity }}
+          scanOnPush: ${{ parameters.scanOnPush }}
+          defaultMutability: ${{ parameters.defaultMutability }}
+          releasesImageCount: ${{ parameters.releasesImageCount }}
+          snapshotsImageCount: ${{ parameters.snapshotsImageCount }}
+          timestamp: ${{ '' | now }}
+
+    - id: publish
+      name: Create Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?owner=mina-arsham&repo=infra-repo
+        branchName: ecr-${{ parameters.projectName }}-${{ '' | now | replace(':', '-') }}
+        title: 'feat: Add ECR repositories for ${{ parameters.projectName }}'
+        description: |
+          ## ECR Repository Addition
+          
+          **Team:** ${{ parameters.teamName }}
+          **Project:** ${{ parameters.projectName }}
+          
+          ### Description
+          ${{ parameters.description }}
+          
+          ### Repositories Created
+          - `releases/${{ parameters.projectName }}` (prod/test environments)
+          - `snapshots/${{ parameters.projectName }}` (dev/int environments)
+          
+          ### Configuration
+          - Image Scanning: ${{ parameters.scanOnPush }}
+          - Tag Mutability: ${{ parameters.defaultMutability }}
+          - Releases Image Retention: Keep last ${{ parameters.releasesImageCount }} images
+          - Snapshots Image Retention: Keep last ${{ parameters.snapshotsImageCount }} images
+          
+          This PR was generated automatically via Backstage.
+        targetPath: proj-mina/${{ parameters.project_name }}
+
+  output:
+    links:
+      - title: Pull Request
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Repository
+        url: ${{ steps['publish'].output.repoContentsUrl }}
