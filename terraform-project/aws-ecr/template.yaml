@@ -42,26 +42,36 @@ spec:
           ui:widget: textarea
         
         project:
-          title: Project Tag
+          title: Project Name
           type: string
           description: Project tag value (e.g., fxb, banking)
           default: "fxb"
-        
+          enum:
+            - proj1
+            - proj2
+            - proj3
+            - fxb
         legalEntity:
           title: Legal Entity
           type: string
           description: Legal entity for tagging
           default: "abcd Group GmbH"
+          enum:
+            - "abcd Group GmbH"
+            - "xyz Corporation"
     
     - title: Repository Configuration
       properties:
         scanOnPush:
           title: Enable Image Scanning on Push
-          type: string
+          type: boolean
           default: "true"
-          enum:
-            - "true"
-            - "false"
+          ui:widget: radio
+          oneOf:
+            - const: true
+              title: Enabled
+            - const: false
+              title: Disabled
           description: Automatically scan images for vulnerabilities when pushed
         
         defaultMutability:
@@ -79,7 +89,7 @@ spec:
           default: 5
           description: Keep last N images in releases/ repository (prod/test)
           minimum: 1
-          maximum: 100
+          maximum: 10
         
         snapshotsImageCount:
           title: Snapshots Repository - Image Retention Count
@@ -87,7 +97,7 @@ spec:
           default: 5
           description: Keep last N images in snapshots/ repository (dev/int)
           minimum: 1
-          maximum: 100
+          maximum: 10
 
   steps:
     - id: fetch-base
@@ -118,7 +128,7 @@ spec:
           ## ECR Repository Addition
           
           **Team:** ${{ parameters.teamName }}
-          **Project:** ${{ parameters.serviceName}}
+          **Service:** ${{ parameters.serviceName}}
           
           ### Description
           ${{ parameters.description }}
