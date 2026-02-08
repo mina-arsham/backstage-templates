@@ -1,11 +1,18 @@
-# ECR Repositories for {{ values.teamName }} - {{ values.serviceName }}
-# Generated: {{ values.timestamp }}
+# DEBUG: Passed values
+# Project: ${{ values.project}}
+# serviceName: ${{ values.serviceName }}
+# legalEntity: ${{ values.legalEntity }}
+# teamName: ${{ values.teamName }}
+# scanOnPush: ${{ values.scanOnPush }}
+
+# ECR Repositories for ${{ values.teamName }} - ${{ values.serviceName }}
+# Generated: ${{ values.timestamp }}
 # Description: {{ values.description }}
 
 #########################################################################
-## releases {{ values.serviceName }} (prod/test environments)
+## releases ${{ values.serviceName }} (prod/test environments)
 #########################################################################
-resource "aws_ecr_repository" "releases_{{ values.serviceName | replace('-', '_') }}" {
+resource "aws_ecr_repository" "releases_${{ values.serviceName | replace('-', '_') }}" {
   name = "releases/{{ values.serviceName }}"
 
   encryption_configuration {
@@ -13,22 +20,22 @@ resource "aws_ecr_repository" "releases_{{ values.serviceName | replace('-', '_'
   }
 
   image_scanning_configuration {
-    scan_on_push = "{{ values.scanOnPush | default('true') }}"
+    scan_on_push = "${{ values.scanOnPush | default('true') }}"
   }
 
   image_tag_mutability = "{{ values.defaultMutability | default('IMMUTABLE') }}"
 
   tags = {
-    Team        = "{{ values.teamName }}"
+    Team        = "${{ values.teamName }}"
     Env         = "prod"
-    Project     = "{{ values.project | default('fxb') }}"
-    LegalEntity = "{{ values.legalEntity | default('abcd Group GmbH') }}"
+    Project     = "${{ values.project | default('fxb') }}"
+    LegalEntity = "${{ values.legalEntity | default('abcd Group GmbH') }}"
     Terraform   = "true"
   }
 }
 
-resource "aws_ecr_repository_policy" "releases_{{ values.serviceName | replace('-', '_') }}_policy" {
-  repository = aws_ecr_repository.releases_{{ values.serviceName | replace('-', '_') }}.name
+resource "aws_ecr_repository_policy" "releases_${{ values.serviceName | replace('-', '_') }}_policy" {
+  repository = aws_ecr_repository.releases_${{ values.serviceName | replace('-', '_') }}.name
 
   policy = <<POLICY
 {
@@ -66,19 +73,19 @@ resource "aws_ecr_repository_policy" "releases_{{ values.serviceName | replace('
 POLICY
 }
 
-resource "aws_ecr_lifecycle_policy" "releases_{{ values.serviceName | replace('-', '_') }}_lifecycle_policy" {
-  repository = aws_ecr_repository.releases_{{ values.serviceName | replace('-', '_') }}.name
-  depends_on = [aws_ecr_repository.releases_{{ values.serviceName | replace('-', '_') }}]
+resource "aws_ecr_lifecycle_policy" "releases_${{ values.serviceName | replace('-', '_') }}_lifecycle_policy" {
+  repository = aws_ecr_repository.releases_${{ values.serviceName | replace('-', '_') }}.name
+  depends_on = [aws_ecr_repository.releases_${{ values.serviceName | replace('-', '_') }}]
   policy     = <<EOF
 {
     "rules": [
         {
             "rulePriority": 1,
-            "description": "Image count more than {{ values.releasesImageCount | default('5') }}",
+            "description": "Image count more than ${{ values.releasesImageCount | default('5') }}",
             "selection": {
                 "tagStatus": "any",
                 "countType": "imageCountMoreThan",
-                "countNumber": {{ values.releasesImageCount | default('5') }}
+                "countNumber": ${{ values.releasesImageCount | default('5') }}
             },
             "action": {
                 "type": "expire"
@@ -91,32 +98,32 @@ EOF
 
 
 #########################################################################
-## Snapshots {{ values.serviceName }} (dev/int environments)
+## Snapshots ${{ values.serviceName }} (dev/int environments)
 #########################################################################
-resource "aws_ecr_repository" "snapshots_{{ values.serviceName | replace('-', '_') }}" {
-  name = "snapshots/{{ values.serviceName }}"
+resource "aws_ecr_repository" "snapshots_${{ values.serviceName | replace('-', '_') }}" {
+  name = "snapshots/${{ values.serviceName }}"
 
   encryption_configuration {
     encryption_type = "AES256"
   }
 
   image_scanning_configuration {
-    scan_on_push = "{{ values.scanOnPush | default('true') }}"
+    scan_on_push = "${{ values.scanOnPush | default('true') }}"
   }
 
-  image_tag_mutability = "{{ values.defaultMutability | default('IMMUTABLE') }}"
+  image_tag_mutability = "${{ values.defaultMutability | default('IMMUTABLE') }}"
 
   tags = {
     Team        = "{{ values.teamName }}"
     Env         = "dev"
-    Project     = "{{ values.project | default('fxb') }}"
-    LegalEntity = "{{ values.legalEntity | default('abcd Group GmbH') }}"
+    Project     = "${{ values.project | default('fxb') }}"
+    LegalEntity = "${{ values.legalEntity | default('abcd Group GmbH') }}"
     Terraform   = "true"
   }
 }
 
-resource "aws_ecr_repository_policy" "snapshots_{{ values.serviceName | replace('-', '_') }}_policy" {
-  repository = aws_ecr_repository.snapshots_{{ values.serviceName | replace('-', '_') }}.name
+resource "aws_ecr_repository_policy" "snapshots_${{ values.serviceName | replace('-', '_') }}_policy" {
+  repository = aws_ecr_repository.snapshots_${{ values.serviceName | replace('-', '_') }}.name
 
   policy = <<POLICY
 {
@@ -154,19 +161,19 @@ resource "aws_ecr_repository_policy" "snapshots_{{ values.serviceName | replace(
 POLICY
 }
 
-resource "aws_ecr_lifecycle_policy" "snapshots_{{ values.serviceName | replace('-', '_') }}_lifecycle_policy" {
-  repository = aws_ecr_repository.snapshots_{{ values.serviceName | replace('-', '_') }}.name
-  depends_on = [aws_ecr_repository.snapshots_{{ values.serviceName | replace('-', '_') }}]
+resource "aws_ecr_lifecycle_policy" "snapshots_${{ values.serviceName | replace('-', '_') }}_lifecycle_policy" {
+  repository = aws_ecr_repository.snapshots_${{ values.serviceName | replace('-', '_') }}.name
+  depends_on = [aws_ecr_repository.snapshots_${{ values.serviceName | replace('-', '_') }}]
   policy     = <<EOF
 {
     "rules": [
         {
             "rulePriority": 1,
-            "description": "Image count more than {{ values.snapshotsImageCount | default('5') }}",
+            "description": "Image count more than ${{ values.snapshotsImageCount | default('5') }}",
             "selection": {
                 "tagStatus": "any",
                 "countType": "imageCountMoreThan",
-                "countNumber": {{ values.snapshotsImageCount | default('5') }}
+                "countNumber": ${{ values.snapshotsImageCount | default('5') }}
             },
             "action": {
                 "type": "expire"
