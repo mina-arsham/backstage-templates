@@ -13,7 +13,7 @@
 ## releases ${{ values.serviceName }} (prod/test environments)
 #########################################################################
 resource "aws_ecr_repository" "releases_${{ values.serviceName | replace('-', '_') }}" {
-  name = "releases/{{ values.serviceName }}"
+  name = "releases/${{ values.serviceName }}"
 
   encryption_configuration {
     encryption_type = "AES256"
@@ -23,7 +23,7 @@ resource "aws_ecr_repository" "releases_${{ values.serviceName | replace('-', '_
     scan_on_push = "${{ values.scanOnPush | default('true') }}"
   }
 
-  image_tag_mutability = "{{ values.defaultMutability | default('IMMUTABLE') }}"
+  image_tag_mutability = "${{ values.defaultMutability | default('IMMUTABLE') }}"
 
   tags = {
     Team        = "${{ values.teamName }}"
@@ -114,7 +114,7 @@ resource "aws_ecr_repository" "snapshots_${{ values.serviceName | replace('-', '
   image_tag_mutability = "${{ values.defaultMutability | default('IMMUTABLE') }}"
 
   tags = {
-    Team        = "{{ values.teamName }}"
+    Team        = "${{ values.teamName }}"
     Env         = "dev"
     Project     = "${{ values.project | default('fxb') }}"
     LegalEntity = "${{ values.legalEntity | default('abcd Group GmbH') }}"
