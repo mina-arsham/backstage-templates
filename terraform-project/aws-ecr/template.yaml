@@ -97,7 +97,7 @@ spec:
         url: ./skeleton
         values:
           teamName: ${{ parameters.teamName }}
-          serviceName: ${{ parameters.projectName }}
+          serviceName: ${{ parameters.serviceName}}
           description: ${{ parameters.description }}
           project: ${{ parameters.project }}
           legalEntity: ${{ parameters.legalEntity }}
@@ -112,20 +112,20 @@ spec:
       action: publish:github:pull-request
       input:
         repoUrl: github.com?owner=mina-arsham&repo=infra-repo
-        branchName: ecr-${{ parameters.projectName }}-${{ '' | now | replace(':', '-') }}
-        title: 'feat: Add ECR repositories for ${{ parameters.projectName }}'
+        branchName: ecr-${{ parameters.serviceName}}-${{ '' | now | replace(':', '-') }}
+        title: 'feat: Add ECR repositories for ${{ parameters.serviceName}}'
         description: |
           ## ECR Repository Addition
           
           **Team:** ${{ parameters.teamName }}
-          **Project:** ${{ parameters.projectName }}
+          **Project:** ${{ parameters.serviceName}}
           
           ### Description
           ${{ parameters.description }}
           
           ### Repositories Created
-          - `releases/${{ parameters.projectName }}` (prod/test environments)
-          - `snapshots/${{ parameters.projectName }}` (dev/int environments)
+          - `releases/${{ parameters.serviceName}}` (prod/test environments)
+          - `snapshots/${{ parameters.serviceName}}` (dev/int environments)
           
           ### Configuration
           - Image Scanning: ${{ parameters.scanOnPush }}
@@ -134,7 +134,7 @@ spec:
           - Snapshots Image Retention: Keep last ${{ parameters.snapshotsImageCount }} images
           
           This PR was generated automatically via Backstage.
-        targetPath: proj-mina/${{ parameters.project_name }}
+        targetPath: proj-mina/${{ parameters.serviceName }}
 
   output:
     links:
